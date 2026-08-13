@@ -10,12 +10,27 @@ Claude Design(`.dc.html`) 포맷으로 재현한 단일 페이지입니다.
 
 ```
 Codle Landing.dc.html   페이지 전체 (마크업 + 스타일 + 로직)
+assets/                 파비콘, 애플 터치 아이콘, OG 이미지
 media/                  수업·맞춤학습 데모 영상 6종 (H.264 mp4)
 support.js              Claude Design 런타임 (vendored)
 image-slot.js           Claude Design 이미지 슬롯 런타임 (vendored)
 uploads/                Claude Design 첨부
+.thumbnail              Claude Design 카드 썸네일 (609x640 WebP)
 docs/원본-대조-평가.md    원본 대비 대조 분석 및 작업 기록
 ```
+
+## 메타데이터
+
+`<helmet>` 안에 문서 제목, description, 파비콘, OG/트위터 카드를 선언합니다.
+아이콘과 OG 이미지는 외부 CDN을 핫링크하지 않고 `assets/` 에 포함해 자급자족합니다.
+
+| 항목 | 값 |
+| --- | --- |
+| `<title>` | 금성 고등 정보 AI 디지털 교육 자료 웹전시 |
+| 파비콘 | `assets/favicon.png` (32x32, 코들 말풍선 마크) |
+| 애플 터치 아이콘 | `assets/apple-touch-icon.png` (180x180) |
+| OG / 트위터 이미지 | `assets/og.png` (1200x630, `summary_large_image`) |
+| `theme-color` | `#3E88FF` |
 
 ## 미리보기
 
