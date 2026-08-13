@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: #FFFFFF;
+    color: #000000;
+    font-family: "Public Sans", "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: #3E88FF; color: #fff; }
+  @keyframes marqueeL { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+  @keyframes bounceDown { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+  section, footer[id] { scroll-margin-top: 72px; }
+
+  /* ===================== 인터랙션 ===================== */
+  a, button { -webkit-tap-highlight-color: transparent; }
+  button { font-family: inherit; }
+
+  /* 키보드 포커스 링 (마우스 클릭 때는 안 뜸) */
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid #3E88FF;
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  /* 마우스가 있는 환경에서만 hover 효과 (모바일 탭 후 hover 잔상 방지) */
+  @media (hover: hover) {
+    .nav-pill a[data-on="0"]:hover { background: #F1F5FB !important; color: #111013 !important; }
+    .cta-btn { transition: background .2s, border-color .2s, transform .2s; }
+    .cta-btn:hover { background: #F2F7FF !important; border-color: #2577FA !important; transform: translateY(-2px); }
+    .ai-arrow { transition: transform .2s, opacity .2s; }
+    .ai-arrow:hover { transform: scale(1.12); background: #3E88FF !important; }
+    .ai-dots button:hover { background: #7FB0FF !important; }
+    .chip { transition: transform .2s, box-shadow .2s; }
+    .chip:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(17,16,19,0.13) !important; }
+    .lesson-media { transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s; }
+    .lesson-item:hover .lesson-media { transform: scale(1.02); box-shadow: 0 18px 40px rgba(17,16,19,0.12); }
+    .ai-card { transition: border-color .2s, box-shadow .25s, transform .25s; }
+    .ai-card:hover { border-color: #CFE0FF !important; box-shadow: 0 14px 34px rgba(17,16,19,0.08); transform: translateY(-2px); }
+  }
+  .cta-btn:active, .ai-arrow:active { transform: translateY(0) scale(0.97); }
+
+  /* 스크롤 리빌: JS가 .js-reveal을 붙였을 때만 동작. JS가 없으면 항상 보인다. */
+  .js-reveal [data-reveal] { opacity: 0; transform: translateY(24px); }
+  .js-reveal [data-reveal].is-in {
+    opacity: 1; transform: none;
+    transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
+  }
+
+  /* 모션 최소화를 요청한 사용자에게는 모든 움직임을 끈다 */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    .js-reveal [data-reveal] { opacity: 1 !important; transform: none !important; }
+  }
+
+  /* ===================== 태블릿 (<=1100px) ===================== */
+  @media (max-width: 1100px) {
+    .hero-h1 { font-size: 108px !important; }
+    .sec-title { font-size: 40px !important; }
+    .solved-stage { width: 100% !important; max-width: 720px !important; }
+    .solved-art.a1 { left: 2% !important; width: 170px !important; }
+    .solved-art.a2 { left: auto !important; right: 2% !important; width: 190px !important; }
+    .solved-chips { padding-right: 0 !important; }
+    .footer-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+
+  /* ===================== 모바일 (<=810px) ===================== */
+  @media (max-width: 810px) {
+    /* 원본 모바일에는 상단 알약 내비가 없다 */
+    .nav-pill { display: none !important; }
+
+    /* --- 히어로 --- */
+    .hero { padding: 0 20px !important; }
+    .hero-eyebrow { font-size: 15px !important; }
+    /* 원본 모바일은 마퀴가 아니라 2줄 고정 헤드라인 */
+    .hero-marquee { margin-top: 22px !important; white-space: normal !important; overflow: visible !important; }
+    .hero-marquee-track { display: block !important; animation: none !important; }
+    .hero-h1 { font-size: 40px !important; line-height: 1.3 !important; padding-right: 0 !important; text-align: center !important; word-break: keep-all !important; }
+    .hero-h1 + .hero-h1 { display: none !important; }
+    /* 원본 모바일: [KUMSUNG x codle] 한 줄 + 배지 카피 아랫줄 */
+    .hero-lockup { margin-top: 30px !important; flex-wrap: wrap !important; justify-content: center !important; gap: 10px !important; }
+    .hero-lockup > svg { width: auto !important; }
+    .hero-lockup > svg:first-of-type { height: 17px !important; }
+    .hero-lockup > svg:nth-of-type(2) { height: 30px !important; }
+    .hero-lockup > span:last-child { flex-basis: 100% !important; text-align: center !important; font-size: 14px !important; margin-top: 2px !important; }
+    .hero-ctas { margin-top: 26px !important; flex-direction: column !important; gap: 14px !important; }
+    .hero-hint { bottom: 28px !important; }
+    .hero-prop { width: 108px !important; }
+    .hero-prop.p1 { left: 67% !important; top: 22% !important; }
+    .hero-prop.p2 { left: 46% !important; top: 14% !important; width: 92px !important; }
+    .hero-prop.p3 { left: -2% !important; top: 19% !important; width: 96px !important; }
+    .hero-prop.p4 { left: 71% !important; top: 56% !important; width: 88px !important; }
+    .hero-prop.p5 { left: 3% !important; top: 61% !important; width: 118px !important; }
+    .hero-prop.p6 { left: -6% !important; top: 50% !important; }
+
+    /* --- 해결 --- */
+    .solved { padding: 80px 20px 72px !important; }
+    .solved-eyebrow { font-size: 18px !important; }
+    .solved-title { font-size: 28px !important; }
+    .solved-sub { font-size: 16px !important; margin-top: 18px !important; }
+    .solved-stage { margin-top: 64px !important; }
+    /* 원본 모바일과 동일하게 일러스트는 칩 뒤에서 일부만 비친다 */
+    .solved-art.a1 { left: 46% !important; top: 108px !important; width: 126px !important; }
+    .solved-art.a2 { right: auto !important; left: 14% !important; top: 132px !important; width: 72px !important; }
+    .solved-chips { gap: 6px !important; }
+    .chip { font-size: 12px !important; padding: 9px 14px !important; }
+
+    /* --- 공통 섹션 --- */
+    .sec-eyebrow { font-size: 20px !important; }
+    .sec-title { font-size: 28px !important; text-align: center !important; }
+
+    /* --- 수업 --- */
+    .lesson { padding: 56px 16px 80px !important; }
+    .lesson-list { margin-top: 64px !important; gap: 72px !important; }
+    .lesson-item { width: 100% !important; text-align: center !important; }
+    .lesson-label { font-size: 14px !important; }
+    .lesson-title { font-size: 28px !important; margin-top: 8px !important; }
+    .lesson-desc { font-size: 15px !important; margin-top: 18px !important; }
+    .lesson-media { margin-top: 30px !important; }
+
+    /* --- AI --- */
+    .ai { padding: 80px 20px 72px !important; }
+    .ai-strip { margin-top: 48px !important; }
+    .ai-strip span { font-size: 14px !important; padding: 9px 16px !important; }
+    .ai-chip { width: 30px !important; height: 30px !important; }
+    .ai-carousel { margin-top: 56px !important; column-gap: 14px !important; }
+    .ai-panel { order: 0 !important; flex-basis: 100% !important; }
+    .ai-prev { order: 1 !important; margin-top: 24px !important; }
+    .ai-dots { order: 2 !important; flex-basis: auto !important; margin-top: 24px !important; }
+    .ai-next { order: 3 !important; margin-top: 24px !important; }
+    .ai-arrow { width: 34px !important; height: 34px !important; }
+    .ai-title { font-size: 28px !important; }
+    .ai-lede { font-size: 16px !important; margin-top: 20px !important; }
+    .ai-cards { margin-top: 32px !important; gap: 16px !important; }
+    .ai-card { grid-template-columns: 1fr !important; gap: 18px !important; padding: 20px !important; }
+    /* 모바일에서는 원본과 동일하게 제목·설명이 항상 미디어 위에 온다 */
+    .ai-card > div { order: -1 !important; }
+    .ai-card-title { font-size: 20px !important; }
+
+    /* --- 맞춤 학습 --- */
+    .custom { padding: 80px 20px 40px !important; }
+    .custom .sec-eyebrow, .custom .sec-title { text-align: left !important; }
+    .custom-list { margin-top: 56px !important; gap: 72px !important; }
+    .custom-title { font-size: 24px !important; font-weight: 700 !important; margin-top: 26px !important; }
+    .custom-desc { font-size: 14px !important; margin-top: 12px !important; }
+
+    /* --- 모바일 전용 CTA --- */
+    .cta-section { display: block !important; }
+
+    /* --- 푸터 --- */
+    footer { padding: 0 !important; }
+    .footer-panel { border-radius: 0 !important; padding: 44px 20px 56px !important; }
+    .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  }
+
+
+  /* ===== 큰 모바일 · 소형 태블릿 (600~810px): 모바일 배치 유지 + 타입만 상향 ===== */
+  @media (min-width: 600px) and (max-width: 810px) {
+    .hero-h1 { font-size: 56px !important; }
+    .hero-eyebrow { font-size: 20px !important; }
+    .solved-title, .sec-title, .lesson-title { font-size: 36px !important; }
+    .solved-sub { font-size: 19px !important; }
+    .chip { font-size: 14px !important; padding: 11px 18px !important; }
+    .lesson-desc { font-size: 17px !important; }
+    .lesson-item, .ai-panel, .custom-list { max-width: 560px !important; margin-left: auto !important; margin-right: auto !important; }
+    .ai-title { font-size: 32px !important; }
+    .custom-title { font-size: 26px !important; }
+    .hero-prop { width: 150px !important; }
+    .hero-prop.p2, .hero-prop.p3, .hero-prop.p4 { width: 128px !important; }
+    .footer-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+
+  /* ===================== 소형 모바일 (<=380px) ===================== */
+  @media (max-width: 380px) {
+    .hero-h1 { font-size: 34px !important; }
+    .solved-title, .sec-title, .lesson-title { font-size: 25px !important; }
+    .chip { font-size: 11px !important; padding: 8px 12px !important; }
+  }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; overflow-x: hidden">
+
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><symbol id="m-bird" viewBox="0 0 97.08 125.95"><defs><style>.bd-cls-2,.bd-cls-3,.bd-cls-4,.bd-cls-5,.bd-cls-8{stroke-width:0}.bd-cls-2{fill:#29528e}.bd-cls-3{fill:#38896c}.bd-cls-4{fill:#3e88ff}.bd-cls-5{fill:#363636}.bd-cls-8{fill:#eaf0f9}</style></defs><g id="bd-svg-476996744_2208__레이어_1-2" data-name="레이어 1"><path class="bd-cls-5" d="M9.41 119.43c2.25 9.21 10.19 3.43 15.43.05 3.13-2.02 6.02-5.08 5.52-8.07-1-6-6.27-6.18-8.19-5.95-9.36 1.12-13.77 9.85-12.76 13.98Zm75.93 2.09c-2.98 8.65-10.26 2.56-15.11-1.06-2.89-2.16-5.46-5.29-4.72-8.11 1.49-5.67 6.66-5.47 8.52-5.11 9.07 1.74 12.64 10.41 11.31 14.28Z"></path><ellipse class="bd-cls-4" cx="47.37" cy="35.01" rx="27.52" ry="26.03"></ellipse><ellipse class="bd-cls-4" cx="47.37" cy="78.46" rx="40.98" ry="41.5"></ellipse><path d="M52.07 33.48c0 4.82-2.1 7.1-4.7 7.1s-4.7-2.4-4.7-7.1c0-2.74 2.1-2.81 4.7-2.81s4.7.08 4.7 2.81Z" style="stroke-width:0;fill:#f86f34"></path><circle class="bd-cls-8" cx="39.41" cy="29.01" r="6.82"></circle><circle class="bd-cls-8" cx="55.36" cy="29.01" r="6.82"></circle><path d="M51.5 33.13c0 2.28-1.85 5.01-4.12 5.01s-4.12-2.73-4.12-5.01 1.85-4.12 4.12-4.12 4.12 1.85 4.12 4.12Z" style="fill:#ffab19;stroke-width:0"></path><ellipse class="bd-cls-2" cx="12.34" cy="78.46" rx="22.07" ry="12.29" transform="rotate(-86.84 12.337 78.456)"></ellipse><ellipse class="bd-cls-2" cx="84.74" cy="78.46" rx="12.29" ry="22.07" transform="rotate(-3.16 84.733 78.347)"></ellipse><path class="bd-cls-5" d="M55.4 33.02c2.23 0 4.03-1.8 4.03-4.02s-1.81-4.02-4.03-4.02-4.03 1.8-4.03 4.02 1.81 4.02 4.03 4.02Zm-16.05 0c2.23 0 4.03-1.8 4.03-4.02s-1.81-4.02-4.03-4.02-4.03 1.8-4.03 4.02 1.81 4.02 4.03 4.02Z"></path><path d="M55.91 13.31c2.42 4.3 7.72 5.91 11.84 3.6 3.11-1.75 4.66-5.23 4.2-8.69-.08-.6.29-1.16.88-1.3l1.26-.29c.6-.14.84-.86.44-1.33-1.13-1.33-3.44-3.59-6.69-4.66C64.05-.6 61.16.11 59 1.32 54.88 3.64 53.49 9 55.91 13.3Z" style="fill:#20c47d;stroke-width:0"></path><path class="bd-cls-3" d="M70.33 4.79c-3.62-.81-7.42 2.06-9.47 4.84-.73 1.04-1.36 2.2-1.98 3.46-.62-4.47 2.89-8.78 7.33-9.47 1.45-.26 3.18.04 4.12 1.16Z"></path><path class="bd-cls-3" d="M61.99 3.32c1.29 1.71 2.52 2.78 4.24 3.93.55.42 1.11.85 1.67 1.45-.8.21-1.57.15-2.32-.01-2.36-.43-4.5-2.91-3.59-5.37Zm-3.98 3.43c1.81 3.55 5.22 4.53 8.21 7.07-3.83.44-9.37-2.66-8.21-7.07Z"></path></g></symbol><symbol id="m-robot" viewBox="0 0 107.47 131.76"><defs><style>.rb-cls-2,.rb-cls-3,.rb-cls-4,.rb-cls-5,.rb-cls-8{stroke-width:0}.rb-cls-2{fill:#29528e}.rb-cls-3{fill:#38896c}.rb-cls-4{fill:#3e88ff}.rb-cls-5{fill:#363636}.rb-cls-8{fill:#eaf0f9}</style></defs><g id="rb-svg991822302_2940__레이어_1-2" data-name="레이어 1"><path class="rb-cls-5" d="M100.5 113.9c6.4 7.41-3.24 10.1-9.26 12.14-3.59 1.22-7.91 1.61-10.12-.61-4.45-4.46-2.91-7.39-1.57-8.75 6.58-6.66 18.08-6.1 20.95-2.79Z"></path><path class="rb-cls-2" d="M97.43 63.34c-10.5-7.48-24.82-5.38-31.98 4.68-5.41 7.6-5.19 17.56-.24 25.2.85 1.32.6 3.07-.63 4.04l-2.66 2.1c-1.26.99-1.02 2.97.44 3.63 4.16 1.88 12.12 4.67 20.98 3.56 10.33-1.3 16.37-6.17 20.13-11.46 7.17-10.06 4.46-24.28-6.03-31.75Z"></path><path class="rb-cls-4" d="M50.12 36.13c-16.96 4.13-25.27 15.19-32.97 31.59-.69 2.94-3.39 4.9-6.28 4.45l-6.28-.97c-2.97-.47-5.33 2.48-4.36 5.4 2.82 8.34 9.31 23.21 22.26 34.21 15.07 12.81 29.53 15.2 41.5 13.19 28.54-4.8 38.02-26.48 35.25-50.42C98 41.69 71.04 31.02 50.13 36.13Z"></path><path class="rb-cls-4" d="M93.51 37.78c2.76-18.16-10.94-30.2-28.49-30.2-18.21 0-28.8 13.42-28.8 29.34 0 7.04-4.31 11.76-5.98 14.86s63.4 14.21 61.49 5.31c-1.9-8.9.28-9.47 1.78-19.3Z"></path><path class="rb-cls-5" d="M26.03 129.48c-7.68 6.75-10.34-3.1-12.37-9.23-1.21-3.66-1.56-8.09.74-10.41 4.63-4.68 8.96-1.67 10.35-.32 6.77 6.61 4.72 16.94 1.28 19.96Z"></path><path class="rb-cls-2" d="M63.77 82.09C62.78 69.24 52 59.59 39.68 60.53c-9.3.71-16.81 7.26-19.51 15.96-.47 1.5-1.97 2.43-3.51 2.1l-3.32-.7c-1.57-.33-2.93 1.12-2.5 2.66 1.22 4.4 4.18 12.3 10.71 18.39 7.61 7.1 15.23 8.61 21.69 8.11 12.32-.94 21.5-12.13 20.52-24.98Z"></path><circle class="rb-cls-8" cx="65.12" cy="26.49" r="6.82"></circle><circle class="rb-cls-8" cx="81.07" cy="26.49" r="6.82"></circle><path class="rb-cls-5" d="M82.99 30.51c2.23 0 4.03-1.8 4.03-4.02s-1.81-4.02-4.03-4.02-4.03 1.8-4.03 4.02 1.81 4.02 4.03 4.02Zm-16.05 0c2.23 0 4.03-1.8 4.03-4.02s-1.81-4.02-4.03-4.02-4.03 1.8-4.03 4.02 1.81 4.02 4.03 4.02Z"></path><path d="M75.74 37.75c-2.9-.63-3.78-2.15-4.05-3.3-.28-1.17-.06-3.19 1.01-4.34.58-.69 2.78-.9 4.89.02 4.37 1.9 5.24 2.98 7.16 6.62 0 0-4.89 1.89-9.01.99Z" style="stroke-width:0;fill:#f86f34"></path><path d="M74.33 34.2c-3.71-2.08-2.75-6.27 3.43-5.09 2.71.52 6.35 2.21 7.98 7.27.1.3.17 1.38-1.34 1.21-2.13-.24-7.38-1.88-10.07-3.39Z" style="fill:#ffab19;stroke-width:0"></path><path d="M49.86 20.28c4.86-.84 8.15-5.31 7.34-9.97-.61-3.52-3.38-6.14-6.79-6.85-.59-.12-1-.66-.93-1.26l.14-1.29a.817.817 0 0 0-1.1-.86c-1.63.63-4.53 2.04-6.62 4.75-2.43 3.16-2.73 6.12-2.3 8.56.81 4.66 5.41 7.75 10.27 6.91Z" style="fill:#20c47d;stroke-width:0"></path><path class="rb-cls-3" d="M46.63 3.85c-1.97 3.18-.53 7.65 1.41 10.54.74 1.03 1.61 2.02 2.6 3.02-4.42-.9-7.32-5.65-6.49-10.07.23-1.45 1.09-2.99 2.47-3.5Z"></path><path class="rb-cls-3" d="M42.46 11.22c2.05-.64 3.46-1.45 5.12-2.68.58-.38 1.17-.76 1.92-1.1-.07.82-.38 1.53-.79 2.18-1.19 2.09-4.25 3.28-6.26 1.6Zm1.9 4.89c3.95-.52 6.01-3.41 9.4-5.39-.86 3.76-5.63 7.94-9.4 5.39Z"></path></g></symbol><symbol id="m-chip" viewBox="0 0 32 32">
+<path d="M16.0055 6.14399C16.1083 6.14399 16.2068 6.10353 16.2795 6.03152C16.3522 5.9595 16.393 5.86183 16.393 5.75999V1.66399C16.393 1.56215 16.3522 1.46447 16.2795 1.39246C16.2068 1.32045 16.1083 1.27999 16.0055 1.27999C15.9027 1.27999 15.8041 1.32045 15.7314 1.39246C15.6588 1.46447 15.6179 1.56215 15.6179 1.66399V5.75999C15.6179 5.86183 15.6588 5.9595 15.7314 6.03152C15.8041 6.10353 15.9027 6.14399 16.0055 6.14399Z" fill="#212121"></path>
+<path d="M31.969 19.2525C31.9003 17.2255 31.8528 15.8262 30.7687 14.7558C29.7843 13.783 28.4767 13.6061 27.8341 13.5682C28.8121 15.5622 29.3174 17.7513 29.3115 19.9682L29.3022 22.8024C29.2995 23.4969 29.239 24.1901 29.1213 24.8747C29.873 24.7089 30.5582 24.3258 31.0901 23.7739C32.0861 22.699 32.0396 21.3302 31.969 19.2525Z" fill="#619DFF"></path>
+<path d="M2.69943 22.8022L2.69012 19.968C2.68421 17.751 3.18951 15.562 4.16748 13.568C3.52492 13.6059 2.21731 13.7835 1.23292 14.7556C0.147772 15.8259 0.101265 17.2252 0.0325392 19.2522C-0.0379955 21.3299 -0.084502 22.6987 0.912545 23.7745C1.44437 24.3262 2.12944 24.7093 2.88106 24.8753C2.76316 24.1903 2.70241 23.497 2.69943 22.8022Z" fill="#619DFF"></path>
+<path d="M16.0101 5.75999C8.47527 5.75999 2.632 12.7268 2.69943 19.968L2.70873 22.8019C2.73147 29.7265 8.40319 32 15.3921 32H16.6281C23.617 32 29.2882 29.7265 29.3115 22.8019L29.3208 19.968C29.389 12.7268 23.5449 5.75999 16.0101 5.75999Z" fill="#D1E2FF"></path>
+<path d="M16.0055 9.08799C9.68084 9.08799 5.1798 14.5298 5.84613 20.7035C5.96393 21.8334 6.4994 22.8802 7.34946 23.6424C8.19952 24.4046 9.30408 24.8283 10.4505 24.832C13.228 24.8243 13.228 23.296 16.0055 23.296C18.7829 23.296 18.7829 24.8243 21.5604 24.832C22.7068 24.8283 23.8114 24.4046 24.6615 23.6424C25.5115 22.8802 26.047 21.8334 26.1648 20.7035C26.8311 14.5298 22.3301 9.08799 16.0055 9.08799Z" fill="#424242"></path>
+<path d="M18.3886 18.496C18.1674 18.2855 17.8721 18.1688 17.5655 18.1705C17.2588 18.1722 16.9649 18.2923 16.7461 18.5052C16.6595 18.6156 16.5486 18.7049 16.4219 18.7664C16.2952 18.8279 16.156 18.8599 16.0149 18.86C15.8738 18.8602 15.7346 18.8285 15.6077 18.7672C15.4809 18.706 15.3698 18.6169 15.283 18.5068C15.0665 18.2892 14.7716 18.1657 14.4632 18.1635C14.1548 18.1613 13.8582 18.2806 13.6386 18.4951C13.419 18.7096 13.2943 19.0018 13.2921 19.3074C13.2899 19.6129 13.4103 19.9068 13.6268 20.1244C13.9309 20.451 14.3 20.7116 14.7107 20.8899C15.1215 21.0682 15.5651 21.1602 16.0135 21.1602C16.462 21.1602 16.9055 21.0682 17.3163 20.8899C17.7271 20.7116 18.0961 20.451 18.4002 20.1244C18.6147 19.906 18.7338 19.6126 18.7316 19.3079C18.7294 19.0031 18.6062 18.7114 18.3886 18.496Z" fill="white"></path>
+<path d="M21.5604 14.8918C21.564 14.7375 21.5366 14.584 21.48 14.4402C21.4234 14.2964 21.3386 14.1651 21.2305 14.0539C21.1224 13.9428 20.9932 13.8539 20.8502 13.7925C20.7073 13.731 20.5535 13.6983 20.3978 13.696C20.0897 13.697 19.7946 13.8187 19.5768 14.0345C19.359 14.2504 19.2361 14.5428 19.2351 14.848V16.64C19.2362 16.9452 19.359 17.2376 19.5768 17.4534C19.7947 17.6692 20.0897 17.7909 20.3978 17.792C20.5535 17.7897 20.7073 17.7569 20.8502 17.6954C20.9931 17.634 21.1223 17.5451 21.2304 17.434C21.3385 17.3228 21.4233 17.1916 21.4799 17.0478C21.5366 16.904 21.5639 16.7505 21.5604 16.5962C21.5604 16.17 21.5589 15.318 21.5604 14.8918Z" fill="white"></path>
+<path d="M11.6132 13.696C11.4574 13.6983 11.3036 13.7311 11.1607 13.7925C11.0178 13.854 10.8886 13.9429 10.7805 14.054C10.6725 14.1652 10.5877 14.2964 10.531 14.4402C10.4744 14.584 10.447 14.7375 10.4505 14.8918C10.4518 15.318 10.4518 16.17 10.4505 16.5962C10.447 16.7505 10.4744 16.904 10.531 17.0478C10.5877 17.1916 10.6725 17.3228 10.7805 17.434C10.8886 17.5451 11.0178 17.634 11.1607 17.6954C11.3036 17.7569 11.4574 17.7897 11.6132 17.792C11.9212 17.7909 12.2163 17.6692 12.4341 17.4534C12.6519 17.2376 12.7747 16.9452 12.7758 16.64V14.848C12.7747 14.5428 12.6519 14.2504 12.4341 14.0346C12.2163 13.8188 11.9212 13.6971 11.6132 13.696Z" fill="white"></path>
+<path d="M16.0054 31.0187C17.5275 31.0187 18.7614 29.7961 18.7614 28.288C18.7614 26.7799 17.5275 25.5573 16.0054 25.5573C14.4834 25.5573 13.2495 26.7799 13.2495 28.288C13.2495 29.7961 14.4834 31.0187 16.0054 31.0187Z" fill="#424242"></path>
+<path d="M16.0054 3.19999C16.8973 3.19999 17.6202 2.48364 17.6202 1.59999C17.6202 0.716334 16.8973 -1.07288e-05 16.0054 -1.07288e-05C15.1136 -1.07288e-05 14.3906 0.716334 14.3906 1.59999C14.3906 2.48364 15.1136 3.19999 16.0054 3.19999Z" fill="#424242"></path>
+</symbol></svg>
+
+  <!-- ========== FLOATING NAV ========== -->
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <nav class="nav-pill" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; background: #fff; border-radius: 24px; padding: 3px; box-shadow: 0 5px 20px rgba(0,0,0,0.05)">
+      <a href="#top" data-on="{{ navTopOn }}" style="{{ navTopStyle }}">처음으로</a>
+      <a href="#lesson" data-on="{{ navLessonOn }}" style="{{ navLessonStyle }}">수업 기능</a>
+      <a href="#ai" data-on="{{ navAiOn }}" style="{{ navAiStyle }}">AI 기능</a>
+      <a href="#custom" data-on="{{ navCustomOn }}" style="{{ navCustomStyle }}">맞춤 학습</a>
+      <a href="#bottom" data-on="{{ navBottomOn }}" style="{{ navBottomStyle }}">맨 아래로</a>
+    </nav>
+  </sc-if>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="top" data-screen-label="히어로" style="position: relative; min-height: 100vh; overflow: hidden; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center">
+
+    <!-- floating 3D props -->
+    <img src="https://framerusercontent.com/images/0f09LEy6qZK1Y9gL9T6AG622ZZ8.png?width=1024" alt="" class="hero-prop p1" style="position: absolute; left: 20.6%; top: 4%; width: 278px; animation: floaty 5s ease-in-out infinite; pointer-events: none">
+    <img src="https://framerusercontent.com/images/m3YA9HpmQG8c9ThSe5XusCzYw.png?width=1024" alt="" class="hero-prop p2" style="position: absolute; left: 11.2%; top: 22%; width: 240px; animation: floaty 6.5s ease-in-out infinite; animation-delay: -3s; pointer-events: none">
+    <img src="https://framerusercontent.com/images/lZLqIoLGAjMHHOlhOwugYSASrjc.png?width=1024" alt="" class="hero-prop p3" style="position: absolute; left: 11.7%; top: 55.7%; width: 334px; animation: floaty 6s ease-in-out infinite; animation-delay: -1s; pointer-events: none">
+    <img src="https://framerusercontent.com/images/l1KkpEI9tJzqQPgJDNKytRuxgeI.png?width=1024" alt="" class="hero-prop p4" style="position: absolute; left: 62.8%; top: 13.4%; width: 240px; animation: floaty 5.5s ease-in-out infinite; animation-delay: -2s; pointer-events: none">
+    <img src="https://framerusercontent.com/images/LUkmo3gFVQOfp5kvltA05Mc6K4.png?width=1024" alt="" class="hero-prop p5" style="position: absolute; left: 73.4%; top: 47.7%; width: 240px; animation: floaty 5s ease-in-out infinite; animation-delay: -1.5s; pointer-events: none">
+    <img src="https://framerusercontent.com/images/jaVohrUAKzleX6rjxEEOPrqeysw.png?width=1024" alt="" class="hero-prop p6" style="position: absolute; left: 66%; top: 68.2%; width: 240px; animation: floaty 6s ease-in-out infinite; animation-delay: -2.5s; pointer-events: none">
+
+    <!-- centered stack -->
+    <div style="position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center">
+      <p class="hero-eyebrow" style="margin: 0; font-size: 28px; font-weight: 700; line-height: 1.2; text-align: center; color: #000">교과 내용부터 AI 교육까지 한 번에!<br>500개 학교가 증명한 코들!</p>
+
+      <!-- oversized marquee headline -->
+      <div class="hero-marquee" style="margin-top: 40px; width: 100%; overflow: hidden; white-space: nowrap">
+        <div class="hero-marquee-track" style="display: inline-flex; animation: marqueeL 24s linear infinite">
+          <h1 class="hero-h1" style="margin: 0; padding-right: 80px; font-size: 148px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; color: #000">준비는 간단하게! 수업은 똑똑하게!</h1>
+          <h1 class="hero-h1" style="margin: 0; padding-right: 80px; font-size: 148px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; color: #000">준비는 간단하게! 수업은 똑똑하게!</h1>
+        </div>
+      </div>
+
+      <!-- brand lockup -->
+      <div class="hero-lockup" style="margin-top: 44px; display: flex; align-items: center; gap: 14px">
+        <svg width="146" height="21" style="display:block;flex-shrink:0" data-name="레이어 2" viewBox="0 0 745.47 106.93"><path d="M154.94 65.08c0 15.53-7.31 23.74-21.13 23.74s-21.13-8.21-21.13-23.74V2.1H91.84v63.54c0 26.63 14.9 41.3 41.97 41.3s41.82-14.67 41.82-41.3V2.1h-20.69v62.98Zm229.47-22.24c-17.12-3.99-22.81-6.61-22.81-14.27 0-7.23 6.46-11.71 16.85-11.71 12.76 0 19.51 6.03 19.51 17.45v1.57h20.99v-1.57c0-22.44-13.9-34.3-40.2-34.3-22.99 0-38.43 12.1-38.43 30.11 0 22.75 19.13 27.32 37.63 31.74 16.02 3.77 22.52 5.65 22.52 14.56s-7.18 13.53-19.21 13.53c-14.12 0-21.28-6.58-21.28-19.55v-1.57H338.7v1.57c0 23.22 15.46 36.54 42.41 36.54 24.4 0 40.79-12.88 40.79-32.06 0-21.55-16.24-27.06-37.48-32.02Zm118.07 22.24c0 15.53-7.31 23.74-21.13 23.74s-21.13-8.21-21.13-23.74V2.1h-20.84v63.54c0 26.63 14.9 41.3 41.97 41.3s41.82-14.67 41.82-41.3V2.1h-20.69v62.98Zm196.03-.11h26.8c-.63 16.34-9.29 24.97-25.07 24.97-17.31 0-28.06-13.81-28.06-36.05s11.03-35.77 28.8-35.77c12.49 0 20.42 5.8 22.33 16.33l.23 1.29h21.93l-.18-1.73c-2.18-20.97-19.17-34-44.32-34-30.98 0-50.23 20.65-50.23 53.88s17.44 52.77 45.51 52.77c12.84 0 23.79-4.16 30.42-11.47v9.65H745v-57h-46.49v17.13ZM199.9 2.1h20.45v102.73H199.9zM0 2.1v102.73h20.45V2.1H0zm298.04 0h20.45v102.73h-20.45zm-238.75 0L20.45 53.47l38.84 51.36h24.08L44.53 53.47 83.37 2.1H59.29zm199.9 66.04L240.79 2.1h-20.44l28.62 102.73h20.45L298.04 2.1h-20.45l-18.4 66.04zM542.68 2.1h20.45v102.73h-20.45zm70.78 0h20.45v102.73h-20.45zm-50.33 0 29.88 102.73h20.45L583.57 2.1h-20.44z" style="fill:#231815" data-name="레이어 1"></path></svg>
+        <span style="font-size: 16px; font-weight: 500; color: #000">x</span>
+        <svg width="89" height="37" style="display:block;flex-shrink:0" width="53" height="22" fill="none"><path d="M17.346 10.057c-2.776 0-5.026 2.13-5.026 4.758 0 1.985 1.283 3.684 3.106 4.398a.642.642 0 0 1 .394.778l-.203.692a.457.457 0 0 0 .529.575c.965-.188 2.71-.687 4.125-1.973 1.65-1.499 2.1-3.09 2.1-4.469 0-2.628-2.25-4.759-5.025-4.759Z" fill="#3E88FF"></path><path d="M17.363.84c-3.152 0-5.707 2.525-5.707 5.638 0 1.527.616 2.911 1.614 3.927a6.263 6.263 0 0 1 3.023-1.393c-.894-.43-1.517-1.38-1.517-2.486 0-1.51 1.158-2.733 2.587-2.733 1.43 0 2.588 1.224 2.588 2.733 0 1.106-.623 2.055-1.517 2.486a6.263 6.263 0 0 1 3.023 1.393 5.584 5.584 0 0 0 1.613-3.927c0-3.113-2.555-5.637-5.707-5.637ZM6.024 15.295c-1.136 0-2.147-.229-3.035-.686a5.197 5.197 0 0 1-2.085-1.905C.4 11.89.15 10.969.15 9.938c0-1.032.252-1.97.754-2.775.502-.806 1.197-1.437 2.085-1.896.888-.457 1.9-.686 3.035-.686 1.135 0 2.075.23 2.898.686a4.212 4.212 0 0 1 1.82 1.963L8.374 8.487c-.274-.49-.617-.851-1.028-1.082a2.683 2.683 0 0 0-1.341-.348 2.85 2.85 0 0 0-1.41.348c-.417.232-.747.56-.988.986-.242.425-.363.941-.363 1.547s.121 1.122.363 1.547c.24.426.57.754.988.986a2.85 2.85 0 0 0 1.41.348c.483 0 .93-.113 1.34-.338.412-.226.754-.59 1.029-1.093l2.368 1.277a4.22 4.22 0 0 1-1.82 1.943c-.823.458-1.789.686-2.898.686Zm22.962 0c-.992 0-1.886-.223-2.681-.667a4.916 4.916 0 0 1-1.89-1.867c-.463-.8-.694-1.74-.694-2.823s.231-2.044.695-2.843a4.857 4.857 0 0 1 1.889-1.857c.795-.438 1.69-.657 2.681-.657.888 0 1.665.194 2.33.58.666.387 1.181.974 1.546 1.76s.549 1.791.549 3.017c0 1.225-.177 2.214-.529 3.007-.352.793-.858 1.383-1.517 1.77-.66.387-1.452.58-2.379.58Zm.529-2.476c.496 0 .946-.116 1.35-.348.405-.232.728-.564.97-.996.241-.432.362-.944.362-1.537 0-.594-.12-1.122-.362-1.547a2.582 2.582 0 0 0-.97-.987 2.665 2.665 0 0 0-1.35-.348c-.496 0-.966.116-1.37.348-.405.232-.729.56-.97.987-.242.425-.362.941-.362 1.547 0 .605.12 1.105.362 1.537.241.432.565.764.97.996.404.232.861.348 1.37.348Zm2.76 2.32v-2.127l.059-3.094-.196-3.076V.79h3.054v14.35h-2.917Zm5.025.001V.79h3.055v14.35h-3.054Zm10.527.155c-1.2 0-2.255-.232-3.162-.697-.907-.464-1.609-1.098-2.105-1.905-.496-.805-.744-1.723-.744-2.755 0-1.032.245-1.97.735-2.775a5.18 5.18 0 0 1 2.006-1.896c.849-.457 1.808-.686 2.879-.686 1.07 0 1.96.216 2.79.648a4.886 4.886 0 0 1 1.966 1.857c.483.806.724 1.77.724 2.891 0 .116-.006.248-.02.396-.012.148-.026.288-.039.416h-8.556V9.03h6.95l-1.174.522c0-.542-.11-1.012-.332-1.412a2.418 2.418 0 0 0-.92-.938c-.392-.225-.85-.338-1.371-.338-.522 0-.982.113-1.38.338a2.372 2.372 0 0 0-.93.948c-.222.406-.333.887-.333 1.44v.465c0 .567.127 1.067.381 1.498.255.432.614.761 1.077.987.464.225 1.009.338 1.635.338.56 0 1.054-.083 1.478-.252a3.584 3.584 0 0 0 1.165-.754l1.626 1.741a4.734 4.734 0 0 1-1.821 1.248c-.731.29-1.573.435-2.526.435h.001Z" fill="#363636"></path></svg>
+        <span style="font-size: 16px; font-weight: 500; color: #000">고등 정보 AI∙디지털 교육자료</span>
+      </div>
+
+      <!-- CTA pair -->
+      <div class="hero-ctas" style="margin-top: 26px; display: flex; align-items: center; gap: 24px">
+        <a href="https://codle.io/sign_in" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">선생님 체험하기</a>
+        <a href="https://codle.io/sign_in" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">학생 체험하기</a>
+      </div>
+    </div>
+
+    <!-- scroll hint -->
+    <div class="hero-hint" style="position: absolute; left: 0; right: 0; bottom: 56px; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 12px">
+      <span style="font-size: 14px; font-weight: 500; color: #4D4D4D">아래쪽으로 스크롤 해 주요 기능을 살펴보세요.</span>
+      <svg width="36" height="20" viewBox="0 0 36 20" fill="none" style="animation: bounceDown 1.6s ease-in-out infinite">
+        <path d="M2 2L18 17L34 2" stroke="#3E88FF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ========== 해결 (교육현장) ========== -->
+  <section class="solved" data-screen-label="해결" style="position: relative; background: #fff; padding: 160px 24px 120px; text-align: center; overflow: hidden">
+    <div style="position: absolute; left: 50%; top: 300px; transform: translateX(-50%); width: 900px; height: 620px; background: radial-gradient(ellipse at center, rgba(62,136,255,0.14), rgba(62,136,255,0) 65%); pointer-events: none"></div>
+
+    <p class="solved-eyebrow" data-reveal style="margin: 0; font-size: 20px; font-weight: 400; line-height: 1; color: #000">걱정 투성이 새 교육 현장,</p>
+    <h2 class="solved-title" data-reveal style="margin: 10px 0 0; font-size: 48px; font-weight: 700; line-height: 1.2; color: #000">이미 금성&amp;코들이 해결했어요!</h2>
+    <p class="solved-sub" data-reveal style="margin: 26px 0 0; font-size: 22px; font-weight: 500; line-height: 1.3; color: #2577FA">학교만을 위해,<br>선생님과 함께 만든 유일한 AI∙디지털 교육자료</p>
+
+    <!-- illustration + bubble stack -->
+    <div class="solved-stage" style="position: relative; margin: 92px auto 0; width: 900px; max-width: 100%">
+      <img src="https://framerusercontent.com/images/TI40Vy6XN0S8QHTHcOXWibIJs.png?width=405" alt="" class="solved-art a1" style="position: absolute; left: 167px; top: -16px; width: 226px">
+      <img src="https://framerusercontent.com/images/jctRnH1yfri6R9upJ6QGaA7GQx0.png?width=406" alt="" class="solved-art a2" style="position: absolute; left: 487px; top: 41px; width: 252px">
+
+      <div class="solved-chips" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 5px; padding-right: 64px">
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">로그인만 하면 모두 세팅되어 있는 교실 👍</span>
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">딴 짓 그만! 학생들이 수업에만 집중하도록 😲</span>
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">정보 과목도 이젠 학생별 맞춤 수업 가능 🎯</span>
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">AI 도우미에게 일일이 질문하지 않아도 알아서 해법 제시 🧠</span>
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">오래 걸리는 생기부 작성 이제 끝 👌</span>
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">저사양 컴퓨터로도 잘 돌아가는 수업 환경 🖥️</span>
+        <span class="chip" data-reveal style="background: #fff; border-radius: 10px; padding: 11px 20px; font-size: 15px; font-weight: 600; line-height: 1; color: #000; box-shadow: 0 4px 14px rgba(17,16,19,0.08)">쓰던 서책 교과서와 내용이 달라도 사용 가능 📚</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 수업 ========== -->
+  <section class="lesson" id="lesson" data-screen-label="수업 기능" style="background: #FAFDFF; padding: 40px 24px 120px">
+    <div style="max-width: 1120px; margin: 0 auto">
+      <p class="sec-eyebrow" data-reveal style="margin: 0; font-size: 20px; font-weight: 400; line-height: 1; text-align: center; color: #000">수업</p>
+      <h2 class="sec-title" data-reveal style="margin: 10px 0 0; font-size: 48px; font-weight: 700; line-height: 1.2; text-align: center; color: #000">모두가 참여하는<br><span style="color: #3E88FF">꿈의 교실,</span> 가까이 있어요!</h2>
+
+      <div class="lesson-list" style="margin-top: 120px; display: flex; flex-direction: column; gap: 120px">
+
+        <div class="lesson-item" data-reveal style="width: 618px; max-width: 100%; margin: 0 auto">
+          <p class="lesson-label" style="margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; color: #000">여기로 모여라!</p>
+          <h3 class="lesson-title" style="margin: 11px 0 0; font-size: 32px; font-weight: 700; line-height: 1.2; color: #000">선생님 인솔기능</h3>
+          <p class="lesson-desc" style="margin: 25px 0 0; font-size: 18px; font-weight: 500; line-height: 1.3; color: #4D4D4D">다 같이 집중 UP! 참여 UP!<br>학생들이 선생님과 똑같은 수업 화면에 있어요.</p>
+          <video src="./media/lesson-guide.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" class="lesson-media" style="display: block; margin-top: 52px; width: 100%; aspect-ratio: 618/346; object-fit: cover; border-radius: 12px"></video>
+        </div>
+
+        <div class="lesson-item" data-reveal style="width: 618px; max-width: 100%; margin: 0 auto">
+          <p class="lesson-label" style="margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; color: #000">파이썬, 메이크코드, 엔트리, 스크래치</p>
+          <h3 class="lesson-title" style="margin: 11px 0 0; font-size: 32px; font-weight: 700; line-height: 1.2; color: #000">다채로운 실습환경</h3>
+          <p class="lesson-desc" style="margin: 25px 0 0; font-size: 18px; font-weight: 500; line-height: 1.3; color: #4D4D4D">여러 서책 교과서의 코딩 환경을 지원해요!<br>이론 - 실습까지 끊김 없이 몰입할 수 있어요.</p>
+          <video src="./media/lesson-practice.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" class="lesson-media" style="display: block; margin-top: 52px; width: 100%; aspect-ratio: 618/346; object-fit: cover; border-radius: 12px"></video>
+        </div>
+
+        <div class="lesson-item" data-reveal style="width: 618px; max-width: 100%; margin: 0 auto">
+          <p class="lesson-label" style="margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; color: #000">실시간 수업 참여 상태를 날씨에 빗대어!</p>
+          <h3 class="lesson-title" style="margin: 11px 0 0; font-size: 32px; font-weight: 700; line-height: 1.2; color: #000">AI 기상 캐스터</h3>
+          <p class="lesson-desc" style="margin: 25px 0 0; font-size: 18px; font-weight: 500; line-height: 1.3; color: #4D4D4D">학생들의 수업 참여 상태와 진행도를<br>AI가 실시간으로 분석하여 알려줍니다.</p>
+          <video src="./media/lesson-weather.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" class="lesson-media" style="display: block; margin-top: 52px; width: 100%; aspect-ratio: 618/346; object-fit: cover; border-radius: 12px"></video>
+        </div>
+
+        <div class="lesson-item" data-reveal style="width: 618px; max-width: 100%; margin: 0 auto">
+          <p class="lesson-label" style="margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; color: #000">돌아다니지 않아도 학습 지원 가능!</p>
+          <h3 class="lesson-title" style="margin: 11px 0 0; font-size: 32px; font-weight: 700; line-height: 1.2; color: #000">실시간 모니터링 기능</h3>
+          <p class="lesson-desc" style="margin: 25px 0 0; font-size: 18px; font-weight: 500; line-height: 1.3; color: #4D4D4D">콘텐츠별 실시간 대시보드로<br>누가 적극적인지, 누가 어려워 하는지 한 눈에 알 수 있어요.</p>
+          <video src="./media/lesson-monitor.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" class="lesson-media" style="display: block; margin-top: 52px; width: 100%; aspect-ratio: 618/346; object-fit: cover; border-radius: 12px"></video>
+        </div>
+
+        <div class="lesson-item" data-reveal style="width: 618px; max-width: 100%; margin: 0 auto">
+          <p class="lesson-label" style="margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; color: #000">학습 상태부터 생기부까지</p>
+          <h3 class="lesson-title" style="margin: 11px 0 0; font-size: 32px; font-weight: 700; line-height: 1.2; color: #000">원스탑 분석 리포트</h3>
+          <p class="lesson-desc" style="margin: 25px 0 0; font-size: 18px; font-weight: 500; line-height: 1.3; color: #4D4D4D">대시보드가 분석! AI 분석톡이 정리!<br>학생 진단 시간은 줄고, 이해 시간은 늘어나요!</p>
+          <video src="./media/lesson-report.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" class="lesson-media" style="display: block; margin-top: 52px; width: 100%; aspect-ratio: 618/346; object-fit: cover; border-radius: 12px"></video>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== AI 기능 ========== -->
+  <section class="ai" id="ai" data-screen-label="AI 기능" style="background: #fff; padding: 160px 24px 120px; overflow: hidden">
+    <div style="max-width: 1120px; margin: 0 auto">
+      <p class="sec-eyebrow" data-reveal style="margin: 0; font-size: 20px; font-weight: 400; line-height: 1; text-align: center; color: #000">AI 기능</p>
+      <h2 class="sec-title" data-reveal style="margin: 16px 0 0; font-size: 48px; font-weight: 700; line-height: 1.2; text-align: center; color: #000">꼭 필요한 곳에서<br><span style="color: #3E88FF">쉽게</span> 사용하는 <span style="color: #3E88FF">AI</span></h2>
+    </div>
+
+    <div class="ai-strip" style="margin-top: 90px; display: flex; align-items: center; justify-content: center; gap: 14px">
+      <svg class="ai-chip" style="width:40px;height:40px;flex-shrink:0" aria-hidden="true"><use href="#m-chip"></use></svg>
+      <span style="background: #EEF4FF; border-radius: 999px; padding: 12px 26px; font-size: 18px; font-weight: 500; color: #3E88FF">챗봇은 그만! 알아서 알려주는 코들 AI 기능!</span>
+    </div>
+
+    <!-- carousel -->
+    <div class="ai-carousel" role="group" aria-roledescription="캐러셀" aria-label="AI 기능" style="max-width: 1120px; margin: 90px auto 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 24px">
+
+      <button onClick="{{ prevSlide }}" aria-label="이전 슬라이드" class="ai-arrow ai-prev" style="order: 1; width: 40px; height: 40px; padding: 0; border: none; border-radius: 999px; background: #D6D8DE; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 6 10l6.5 5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <div class="ai-panel" aria-live="polite" style="order: 2; width: 752px; max-width: 100%">
+
+      <!-- 학생 슬라이드 -->
+      <sc-if value="{{ isStudent }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <p class="ai-eyebrow" style="margin: 0; font-size: 16px; font-weight: 400; line-height: 1.3; color: #3E88FF">학생에게 필요한</p>
+          <h3 class="ai-title" style="margin: 8px 0 0; font-size: 36px; font-weight: 700; line-height: 1.2; color: #2577FA">AI 튜터</h3>
+          <svg class="ai-mascot" style="display:block;margin-top:24px;width:52px;height:68px" aria-hidden="true"><use href="#m-bird"></use></svg>
+          <p class="ai-lede" style="margin: 28px 0 0; font-size: 20px; font-weight: 500; line-height: 1.3; color: #4D4D4D">학생이 ‘직접, 잘' 질문해야 하는 챗봇<br>vs <b style="color: #000; font-weight: 700">‘클릭하면 알아서' 알려주는 코들 AI</b></p>
+
+          <div class="ai-cards" style="margin-top: 48px; display: flex; flex-direction: column; gap: 24px">
+            <div class="ai-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; background: #fff; border: 1px solid #EDEDF2; border-radius: 16px; padding: 24px">
+              <video src="https://framerusercontent.com/assets/h15H3YjYzNOcnvL3a4vFQpgeA2c.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; border-radius: 12px"></video>
+              <div>
+                <h4 class="ai-card-title" style="margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; color: #050505">AI 오류 도우미</h4>
+                <p style="margin: 20px 0 0; font-size: 15px; font-weight: 500; line-height: 1.3; color: #4D4D4D">파이썬 오류 질문이 너무 많으시다구요?<br>이제 아이들도 스스로 해결할 수 있어요.</p>
+              </div>
+            </div>
+            <div class="ai-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; background: #fff; border: 1px solid #EDEDF2; border-radius: 16px; padding: 24px">
+              <div>
+                <h4 class="ai-card-title" style="margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; color: #050505">AI 활동지 도우미</h4>
+                <p style="margin: 20px 0 0; font-size: 15px; font-weight: 500; line-height: 1.3; color: #4D4D4D">클릭 한 번으로 글쓰기 어려움 타파!<br>활동 주제와 작성하는 내용의 맥락을 읽고 도움을 줘요.</p>
+              </div>
+              <video src="https://framerusercontent.com/assets/IkksRntxRbiYmaJpSh7ZCiElMk.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; border-radius: 12px"></video>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- 선생님 슬라이드 -->
+      <sc-if value="{{ isTeacher }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <p class="ai-eyebrow" style="margin: 0; font-size: 16px; font-weight: 400; line-height: 1.3; color: #3E88FF">선생님에게 필요한</p>
+          <h3 class="ai-title" style="margin: 8px 0 0; font-size: 36px; font-weight: 700; line-height: 1.2; color: #2577FA">AI 보조교사</h3>
+          <svg class="ai-mascot" style="display:block;margin-top:24px;width:58px;height:71px" aria-hidden="true"><use href="#m-robot"></use></svg>
+          <p class="ai-lede" style="margin: 28px 0 0; font-size: 20px; font-weight: 500; line-height: 1.3; color: #000">번거롭고 기계적인 일은 AI 보조교사에게 맡겨주세요!<br>선생님의 효율적인 시간 관리를 도와드립니다.</p>
+
+          <div class="ai-cards" style="margin-top: 48px; display: flex; flex-direction: column; gap: 24px">
+            <div class="ai-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; background: #fff; border: 1px solid #EDEDF2; border-radius: 16px; padding: 24px">
+              <video src="https://framerusercontent.com/assets/eJmLz3ZbGjWiZtDp678mNz72aEc.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; border-radius: 12px"></video>
+              <div>
+                <h4 class="ai-card-title" style="margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; color: #050505">AI 복습 퀴즈 생성</h4>
+                <p style="margin: 20px 0 0; font-size: 15px; font-weight: 500; line-height: 1.3; color: #4D4D4D">매번 문제 출제 고민하지 않아도 돼요!<br>AI가 만들어 주는 퀴즈 확인만 하세요!</p>
+              </div>
+            </div>
+            <div class="ai-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; background: #fff; border: 1px solid #EDEDF2; border-radius: 16px; padding: 24px">
+              <div>
+                <h4 class="ai-card-title" style="margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; color: #050505">AI 테스트케이스</h4>
+                <p style="margin: 20px 0 0; font-size: 15px; font-weight: 500; line-height: 1.3; color: #4D4D4D">코딩 문제 출제에 ‘가장’ 머리 아픈 테스트케이스 넣기,<br>AI가 3초만에 해드려요.</p>
+              </div>
+              <video src="https://framerusercontent.com/assets/IkTzGGayS0X7krMiYDvsucOyjb8.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; border-radius: 12px"></video>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      </div><!-- /.ai-panel -->
+
+      <button onClick="{{ nextSlide }}" aria-label="다음 슬라이드" class="ai-arrow ai-next" style="order: 3; width: 40px; height: 40px; padding: 0; border: none; border-radius: 999px; background: #D6D8DE; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4.5 14 10l-6.5 5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <div class="ai-dots" style="order: 4; flex-basis: 100%; margin-top: 28px; display: flex; justify-content: center; gap: 8px">
+        <button onClick="{{ showStudent }}" aria-label="학생에게 필요한 AI 보기" aria-pressed="{{ isStudentStr }}" style="{{ dotStudentStyle }}"></button>
+        <button onClick="{{ showTeacher }}" aria-label="선생님에게 필요한 AI 보기" aria-pressed="{{ isTeacherStr }}" style="{{ dotTeacherStyle }}"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 맞춤 학습 ========== -->
+  <section class="custom" id="custom" data-screen-label="맞춤 학습" style="background: #fff; padding: 160px 24px 40px">
+    <div style="max-width: 1120px; margin: 0 auto">
+      <p class="sec-eyebrow" data-reveal style="margin: 0; font-size: 20px; font-weight: 400; line-height: 1; color: #000">맞춤 학습</p>
+      <h2 class="sec-title" data-reveal style="margin: 16px 0 0; font-size: 48px; font-weight: 700; line-height: 1.2; color: #000">수업 중에도 <span style="color: #3E88FF">맞춤 교육</span>이 가능하다면?</h2>
+    </div>
+
+    <div class="custom-list" style="max-width: 922px; margin: 130px auto 0; display: flex; flex-direction: column; gap: 130px">
+
+      <div class="custom-item" data-reveal>
+        <div style="background: rgba(102,112,255,0.05); border-radius: 26px; overflow: hidden; aspect-ratio: 922/518; display: flex; align-items: center; justify-content: center">
+          <video src="./media/custom-fork.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; height: 100%; object-fit: cover"></video>
+        </div>
+        <h3 class="custom-title" style="margin: 40px 0 0; font-size: 28px; font-weight: 500; line-height: 1.2; text-align: center; color: #050505">수업 속 맞춤 추천, <b style="font-weight: 700">갈림길</b></h3>
+        <p class="custom-desc" style="margin: 18px 0 0; font-size: 16px; font-weight: 500; line-height: 1.4; text-align: center; color: #4D4D4D">수업 중에도 추천되는 맞춤형 콘텐츠가<br>잘하는 학생에게는 도전 의식을, 어려움을 겪는 학생에게는 자신감을 선물해요.</p>
+        <p style="margin: 22px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-align: center; color: #9BC0FF">CODLE FOR STUDENTS AND TEACHERS ✦</p>
+      </div>
+
+      <div class="custom-item" data-reveal>
+        <div style="background: rgba(102,112,255,0.05); border-radius: 26px; overflow: hidden; aspect-ratio: 922/518; display: flex; align-items: center; justify-content: center">
+          <video src="https://framerusercontent.com/assets/LrCU4UoXSYu6TDOeDDnHLDeZnV8.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; height: 100%; object-fit: cover"></video>
+        </div>
+        <h3 class="custom-title" style="margin: 40px 0 0; font-size: 28px; font-weight: 500; line-height: 1.2; text-align: center; color: #050505">될 때까지 재도전, <b style="font-weight: 700">공부방</b></h3>
+        <p class="custom-desc" style="margin: 18px 0 0; font-size: 16px; font-weight: 500; line-height: 1.4; text-align: center; color: #4D4D4D">틀린 문제가 있다면, 완벽하게 이해할 때까지 다시 풀어보며<br>공부방에 도전할 수 있어요.</p>
+        <p style="margin: 22px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-align: center; color: #9BC0FF">CODLE FOR STUDENTS AND TEACHERS ✦</p>
+      </div>
+
+      <div class="custom-item" data-reveal>
+        <div style="background: rgba(102,112,255,0.05); border-radius: 26px; overflow: hidden; aspect-ratio: 922/518; display: flex; align-items: center; justify-content: center">
+          <video src="https://framerusercontent.com/assets/CekkFHtB1E9Nh1pnGudxwoQOdc.mp4" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="width: 100%; height: 100%; object-fit: cover"></video>
+        </div>
+        <h3 class="custom-title" style="margin: 40px 0 0; font-size: 28px; font-weight: 500; line-height: 1.2; text-align: center; color: #050505">우리 학생에 맞는 수업 설계, <b style="font-weight: 700">수업 자료 재구성</b></h3>
+        <p class="custom-desc" style="margin: 18px 0 0; font-size: 16px; font-weight: 500; line-height: 1.4; text-align: center; color: #4D4D4D">배부한 자료 숨기기도, 보충 자료 추가도 모두 가능!<br>우리 학교 학생을 위한 수업 설계를 손쉽게 할 수 있어요.</p>
+        <p style="margin: 22px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-align: center; color: #9BC0FF">CODLE FOR STUDENTS AND TEACHERS ✦</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ========== 체험 가이드 CTA (모바일 전용 · 원본 데스크톱에는 없음) ========== -->
+  <section class="cta-section" data-screen-label="체험 가이드" style="display: none; background: #fff; padding: 72px 20px 80px; text-align: center">
+    <p style="margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; color: #3E88FF">편리함으로 완성되는 AI 교육 혁신</p>
+    <h2 style="margin: 14px 0 0; font-size: 36px; font-weight: 700; line-height: 1.2; color: #000">금성x코들이<br>함께 할게요!</h2>
+    <div style="margin-top: 36px; display: flex; align-items: center; justify-content: center; gap: 12px">
+      <img src="https://framerusercontent.com/images/iTcMOdi0wvPs5kieC6PWI28zNKs.png?width=394" alt="" style="height: 38px; object-fit: contain">
+      <svg width="122" height="18" style="display:block;flex-shrink:0" data-name="레이어 2" viewBox="0 0 745.47 106.93"><path d="M154.94 65.08c0 15.53-7.31 23.74-21.13 23.74s-21.13-8.21-21.13-23.74V2.1H91.84v63.54c0 26.63 14.9 41.3 41.97 41.3s41.82-14.67 41.82-41.3V2.1h-20.69v62.98Zm229.47-22.24c-17.12-3.99-22.81-6.61-22.81-14.27 0-7.23 6.46-11.71 16.85-11.71 12.76 0 19.51 6.03 19.51 17.45v1.57h20.99v-1.57c0-22.44-13.9-34.3-40.2-34.3-22.99 0-38.43 12.1-38.43 30.11 0 22.75 19.13 27.32 37.63 31.74 16.02 3.77 22.52 5.65 22.52 14.56s-7.18 13.53-19.21 13.53c-14.12 0-21.28-6.58-21.28-19.55v-1.57H338.7v1.57c0 23.22 15.46 36.54 42.41 36.54 24.4 0 40.79-12.88 40.79-32.06 0-21.55-16.24-27.06-37.48-32.02Zm118.07 22.24c0 15.53-7.31 23.74-21.13 23.74s-21.13-8.21-21.13-23.74V2.1h-20.84v63.54c0 26.63 14.9 41.3 41.97 41.3s41.82-14.67 41.82-41.3V2.1h-20.69v62.98Zm196.03-.11h26.8c-.63 16.34-9.29 24.97-25.07 24.97-17.31 0-28.06-13.81-28.06-36.05s11.03-35.77 28.8-35.77c12.49 0 20.42 5.8 22.33 16.33l.23 1.29h21.93l-.18-1.73c-2.18-20.97-19.17-34-44.32-34-30.98 0-50.23 20.65-50.23 53.88s17.44 52.77 45.51 52.77c12.84 0 23.79-4.16 30.42-11.47v9.65H745v-57h-46.49v17.13ZM199.9 2.1h20.45v102.73H199.9zM0 2.1v102.73h20.45V2.1H0zm298.04 0h20.45v102.73h-20.45zm-238.75 0L20.45 53.47l38.84 51.36h24.08L44.53 53.47 83.37 2.1H59.29zm199.9 66.04L240.79 2.1h-20.44l28.62 102.73h20.45L298.04 2.1h-20.45l-18.4 66.04zM542.68 2.1h20.45v102.73h-20.45zm70.78 0h20.45v102.73h-20.45zm-50.33 0 29.88 102.73h20.45L583.57 2.1h-20.44z" style="fill:#231815" data-name="레이어 1"></path></svg>
+      <span style="font-size: 14px; font-weight: 500; color: #000">x</span>
+      <svg width="76" height="32" style="display:block;flex-shrink:0" width="53" height="22" fill="none"><path d="M17.346 10.057c-2.776 0-5.026 2.13-5.026 4.758 0 1.985 1.283 3.684 3.106 4.398a.642.642 0 0 1 .394.778l-.203.692a.457.457 0 0 0 .529.575c.965-.188 2.71-.687 4.125-1.973 1.65-1.499 2.1-3.09 2.1-4.469 0-2.628-2.25-4.759-5.025-4.759Z" fill="#3E88FF"></path><path d="M17.363.84c-3.152 0-5.707 2.525-5.707 5.638 0 1.527.616 2.911 1.614 3.927a6.263 6.263 0 0 1 3.023-1.393c-.894-.43-1.517-1.38-1.517-2.486 0-1.51 1.158-2.733 2.587-2.733 1.43 0 2.588 1.224 2.588 2.733 0 1.106-.623 2.055-1.517 2.486a6.263 6.263 0 0 1 3.023 1.393 5.584 5.584 0 0 0 1.613-3.927c0-3.113-2.555-5.637-5.707-5.637ZM6.024 15.295c-1.136 0-2.147-.229-3.035-.686a5.197 5.197 0 0 1-2.085-1.905C.4 11.89.15 10.969.15 9.938c0-1.032.252-1.97.754-2.775.502-.806 1.197-1.437 2.085-1.896.888-.457 1.9-.686 3.035-.686 1.135 0 2.075.23 2.898.686a4.212 4.212 0 0 1 1.82 1.963L8.374 8.487c-.274-.49-.617-.851-1.028-1.082a2.683 2.683 0 0 0-1.341-.348 2.85 2.85 0 0 0-1.41.348c-.417.232-.747.56-.988.986-.242.425-.363.941-.363 1.547s.121 1.122.363 1.547c.24.426.57.754.988.986a2.85 2.85 0 0 0 1.41.348c.483 0 .93-.113 1.34-.338.412-.226.754-.59 1.029-1.093l2.368 1.277a4.22 4.22 0 0 1-1.82 1.943c-.823.458-1.789.686-2.898.686Zm22.962 0c-.992 0-1.886-.223-2.681-.667a4.916 4.916 0 0 1-1.89-1.867c-.463-.8-.694-1.74-.694-2.823s.231-2.044.695-2.843a4.857 4.857 0 0 1 1.889-1.857c.795-.438 1.69-.657 2.681-.657.888 0 1.665.194 2.33.58.666.387 1.181.974 1.546 1.76s.549 1.791.549 3.017c0 1.225-.177 2.214-.529 3.007-.352.793-.858 1.383-1.517 1.77-.66.387-1.452.58-2.379.58Zm.529-2.476c.496 0 .946-.116 1.35-.348.405-.232.728-.564.97-.996.241-.432.362-.944.362-1.537 0-.594-.12-1.122-.362-1.547a2.582 2.582 0 0 0-.97-.987 2.665 2.665 0 0 0-1.35-.348c-.496 0-.966.116-1.37.348-.405.232-.729.56-.97.987-.242.425-.362.941-.362 1.547 0 .605.12 1.105.362 1.537.241.432.565.764.97.996.404.232.861.348 1.37.348Zm2.76 2.32v-2.127l.059-3.094-.196-3.076V.79h3.054v14.35h-2.917Zm5.025.001V.79h3.055v14.35h-3.054Zm10.527.155c-1.2 0-2.255-.232-3.162-.697-.907-.464-1.609-1.098-2.105-1.905-.496-.805-.744-1.723-.744-2.755 0-1.032.245-1.97.735-2.775a5.18 5.18 0 0 1 2.006-1.896c.849-.457 1.808-.686 2.879-.686 1.07 0 1.96.216 2.79.648a4.886 4.886 0 0 1 1.966 1.857c.483.806.724 1.77.724 2.891 0 .116-.006.248-.02.396-.012.148-.026.288-.039.416h-8.556V9.03h6.95l-1.174.522c0-.542-.11-1.012-.332-1.412a2.418 2.418 0 0 0-.92-.938c-.392-.225-.85-.338-1.371-.338-.522 0-.982.113-1.38.338a2.372 2.372 0 0 0-.93.948c-.222.406-.333.887-.333 1.44v.465c0 .567.127 1.067.381 1.498.255.432.614.761 1.077.987.464.225 1.009.338 1.635.338.56 0 1.054-.083 1.478-.252a3.584 3.584 0 0 0 1.165-.754l1.626 1.741a4.734 4.734 0 0 1-1.821 1.248c-.731.29-1.573.435-2.526.435h.001Z" fill="#363636"></path></svg>
+      <svg style="width:33px;height:43px;flex-shrink:0" aria-hidden="true"><use href="#m-bird"></use></svg>
+    </div>
+    <div style="margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <a href="https://codle.io/sign_in" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">선생님 체험하기</a>
+      <a href="https://codle.io/sign_in" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">학생 체험하기</a>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer id="bottom" data-screen-label="푸터" style="padding: 0 24px">
+    <div class="footer-panel" style="max-width: 1158px; margin: 0 auto; background: #FAFAFA; border-radius: 12px 12px 0 0; padding: 56px 40px 64px">
+      <div class="footer-grid" style="display: grid; grid-template-columns: 340px 1fr; gap: 40px">
+        <div>
+          <svg width="111" height="16" style="display:block;flex-shrink:0" data-name="레이어 2" viewBox="0 0 745.47 106.93"><path d="M154.94 65.08c0 15.53-7.31 23.74-21.13 23.74s-21.13-8.21-21.13-23.74V2.1H91.84v63.54c0 26.63 14.9 41.3 41.97 41.3s41.82-14.67 41.82-41.3V2.1h-20.69v62.98Zm229.47-22.24c-17.12-3.99-22.81-6.61-22.81-14.27 0-7.23 6.46-11.71 16.85-11.71 12.76 0 19.51 6.03 19.51 17.45v1.57h20.99v-1.57c0-22.44-13.9-34.3-40.2-34.3-22.99 0-38.43 12.1-38.43 30.11 0 22.75 19.13 27.32 37.63 31.74 16.02 3.77 22.52 5.65 22.52 14.56s-7.18 13.53-19.21 13.53c-14.12 0-21.28-6.58-21.28-19.55v-1.57H338.7v1.57c0 23.22 15.46 36.54 42.41 36.54 24.4 0 40.79-12.88 40.79-32.06 0-21.55-16.24-27.06-37.48-32.02Zm118.07 22.24c0 15.53-7.31 23.74-21.13 23.74s-21.13-8.21-21.13-23.74V2.1h-20.84v63.54c0 26.63 14.9 41.3 41.97 41.3s41.82-14.67 41.82-41.3V2.1h-20.69v62.98Zm196.03-.11h26.8c-.63 16.34-9.29 24.97-25.07 24.97-17.31 0-28.06-13.81-28.06-36.05s11.03-35.77 28.8-35.77c12.49 0 20.42 5.8 22.33 16.33l.23 1.29h21.93l-.18-1.73c-2.18-20.97-19.17-34-44.32-34-30.98 0-50.23 20.65-50.23 53.88s17.44 52.77 45.51 52.77c12.84 0 23.79-4.16 30.42-11.47v9.65H745v-57h-46.49v17.13ZM199.9 2.1h20.45v102.73H199.9zM0 2.1v102.73h20.45V2.1H0zm298.04 0h20.45v102.73h-20.45zm-238.75 0L20.45 53.47l38.84 51.36h24.08L44.53 53.47 83.37 2.1H59.29zm199.9 66.04L240.79 2.1h-20.44l28.62 102.73h20.45L298.04 2.1h-20.45l-18.4 66.04zM542.68 2.1h20.45v102.73h-20.45zm70.78 0h20.45v102.73h-20.45zm-50.33 0 29.88 102.73h20.45L583.57 2.1h-20.44z" style="fill:#231815" data-name="레이어 1"></path></svg>
+          <p style="margin: 18px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">(주)금성출판사</p>
+          <p style="margin: 6px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">서울특별시 마포구 만리재옛길 23</p>
+          <p style="margin: 6px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">고객센터 080-969-1000 <span style="color: #B8B8B8">ㅣ</span> 지점연결 1577-7799</p>
+          <p style="margin: 6px 0 0; font-size: 12px; font-weight: 400; line-height: 1.2; color: #808080">Copyright©Kumsung Publishing.,Ltd All Right Reserved.</p>
+        </div>
+        <div>
+          <svg width="80" height="30" style="display:block;flex-shrink:0" width="69" height="26" viewBox="0 0 69 26" fill="none">
+<path d="M7.62953 26H0.5V3.71444L7.62953 0V26Z" fill="url(#fm_svg-176204577_6655_paint0_linear_3748_5481)" style=""></path>
+<path d="M7.62952 26H14.758V3.71444L7.62952 0V26Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M19.9546 10.7353V5.27471H17.8087V4.5H22.9856V5.27471H20.8397V10.7353H19.9546Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M24.8551 9.9606H28.5045V10.7353H23.9621V4.5H28.3792V5.27471H24.8551V9.9606ZM24.7755 7.19067H27.9954V7.94755H24.7755V7.19067Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M29.0037 10.7353L31.8377 4.5H32.7228L35.5667 10.7353H34.628L32.0983 4.99732H32.4563L29.9265 10.7353H29.0057H29.0037ZM30.2109 9.17599L30.4515 8.4627H33.9757L34.2342 9.17599H30.2109Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M36.4975 10.7353V4.5H37.2314L40.0396 9.21363H39.6458L42.4182 4.5H43.1521L43.16 10.7353H42.3009L42.2929 5.84336H42.4977L40.0296 9.97645H39.618L37.132 5.84336H37.3547V10.7353H36.4955H36.4975Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M18.7116 21.4267V15.1914H19.4455L22.2537 19.905H21.8599L24.6323 15.1914H25.3662L25.3741 21.4267H24.515L24.507 16.5348H24.7119L22.2438 20.6679H21.8321L19.3461 16.5348H19.5688V21.4267H18.7097H18.7116Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M30.0776 21.498C29.6003 21.498 29.1588 21.4187 28.7491 21.2583C28.3414 21.0978 27.9874 20.8739 27.6891 20.5866C27.3908 20.2993 27.1581 19.9625 26.991 19.5761C26.8239 19.1897 26.7404 18.7677 26.7404 18.31C26.7404 17.8523 26.8239 17.4303 26.991 17.0459C27.1581 16.6595 27.3908 16.3227 27.6891 16.0354C27.9874 15.7481 28.3394 15.5222 28.7451 15.3637C29.1508 15.2032 29.5943 15.124 30.0776 15.124C30.5609 15.124 30.9945 15.2032 31.3962 15.3598C31.7979 15.5163 32.15 15.7402 32.4523 16.0275C32.7526 16.3148 32.9853 16.6536 33.1503 17.038C33.3134 17.4243 33.3969 17.8484 33.3969 18.312C33.3969 18.7756 33.3154 19.1996 33.1503 19.586C32.9853 19.9724 32.7546 20.3092 32.4523 20.5965C32.1519 20.8838 31.7999 21.1077 31.3962 21.2642C30.9945 21.4207 30.5549 21.5 30.0776 21.5V21.498ZM30.0776 20.7055C30.4237 20.7055 30.7439 20.646 31.0382 20.5271C31.3326 20.4083 31.5891 20.2398 31.8079 20.0239C32.0267 19.8079 32.1957 19.5523 32.317 19.263C32.4383 18.9718 32.5 18.6548 32.5 18.31C32.5 17.9652 32.4383 17.6482 32.317 17.357C32.1957 17.0657 32.0247 16.8121 31.8079 16.5961C31.5911 16.3802 31.3346 16.2118 31.0382 16.0929C30.7439 15.974 30.4217 15.9146 30.0776 15.9146C29.7336 15.9146 29.4034 15.974 29.1071 16.0929C28.8127 16.2118 28.5542 16.3802 28.3334 16.5961C28.1127 16.8121 27.9417 17.0677 27.8183 17.357C27.697 17.6482 27.6354 17.9652 27.6354 18.31C27.6354 18.6548 27.697 18.9718 27.8183 19.263C27.9397 19.5543 28.1127 19.8079 28.3334 20.0239C28.5542 20.2398 28.8127 20.4083 29.1071 20.5271C29.4014 20.646 29.7256 20.7055 30.0776 20.7055Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M34.7632 21.4267V15.1914H35.4971L39.6378 20.3132H39.2539V15.1914H40.1489V21.4267H39.415L35.2743 16.3049H35.6582V21.4267H34.7632Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M44.8505 21.498C44.3732 21.498 43.9317 21.4187 43.522 21.2583C43.1143 21.0978 42.7603 20.8739 42.4619 20.5866C42.1636 20.2993 41.9309 19.9625 41.7639 19.5761C41.5968 19.1897 41.5133 18.7677 41.5133 18.31C41.5133 17.8523 41.5968 17.4303 41.7639 17.0459C41.9309 16.6595 42.1636 16.3227 42.4619 16.0354C42.7603 15.7481 43.1123 15.5222 43.518 15.3637C43.9237 15.2032 44.3672 15.124 44.8505 15.124C45.3338 15.124 45.7673 15.2032 46.1691 15.3598C46.5708 15.5163 46.9228 15.7402 47.2251 16.0275C47.5254 16.3148 47.7581 16.6536 47.9232 17.038C48.0863 17.4243 48.1698 17.8484 48.1698 18.312C48.1698 18.7756 48.0883 19.1996 47.9232 19.586C47.7581 19.9724 47.5274 20.3092 47.2251 20.5965C46.9248 20.8838 46.5728 21.1077 46.1691 21.2642C45.7673 21.4207 45.3278 21.5 44.8505 21.5V21.498ZM44.8505 20.7055C45.1965 20.7055 45.5167 20.646 45.8111 20.5271C46.1054 20.4083 46.362 20.2398 46.5807 20.0239C46.7995 19.8079 46.9686 19.5523 47.0899 19.263C47.2112 18.9718 47.2728 18.6548 47.2728 18.31C47.2728 17.9652 47.2112 17.6482 47.0899 17.357C46.9686 17.0657 46.7975 16.8121 46.5807 16.5961C46.364 16.3802 46.1074 16.2118 45.8111 16.0929C45.5167 15.974 45.1945 15.9146 44.8505 15.9146C44.5064 15.9146 44.1763 15.974 43.8799 16.0929C43.5856 16.2118 43.3271 16.3802 43.1063 16.5961C42.8855 16.8121 42.7145 17.0677 42.5912 17.357C42.4699 17.6482 42.4082 17.9652 42.4082 18.31C42.4082 18.6548 42.4699 18.9718 42.5912 19.263C42.7125 19.5543 42.8855 19.8079 43.1063 20.0239C43.3271 20.2398 43.5856 20.4083 43.8799 20.5271C44.1743 20.646 44.4985 20.7055 44.8505 20.7055Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M49.5361 21.4267V15.1914H50.431V20.652H53.8199V21.4267H49.5361Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M54.8481 21.4267V15.1914H55.7431V21.4267H54.8481Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M58.8635 21.4267V15.9661H56.7176V15.1914H61.8945V15.9661H59.7486V21.4267H58.8635Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<path d="M63.764 21.4267H62.869V15.1913H63.764V21.4267ZM67.4393 18.6468H63.6745V17.8721H67.4393V18.6468ZM67.3597 15.1894H68.2547V21.4247H67.3597V15.1894Z" fill="#00002F" style="fill:#00002F;fill:color(display-p3 0.0000 0.0000 0.1843);fill-opacity:1;"></path>
+<defs>
+<linearGradient id="fm_svg-176204577_6655_paint0_linear_3748_5481" x1="10.6066" y1="24.288" x2="-0.798315" y2="4.46051" gradientUnits="userSpaceOnUse">
+<stop stop-color="#00002F" style="stop-color:#00002F;stop-color:color(display-p3 0.0000 0.0000 0.1843);stop-opacity:1;"></stop>
+<stop offset="0.5" stop-color="#FF6B47" style="stop-color:#FF6B47;stop-color:color(display-p3 1.0000 0.4196 0.2784);stop-opacity:1;"></stop>
+<stop offset="0.75" stop-color="#21FF95" style="stop-color:#21FF95;stop-color:color(display-p3 0.1294 1.0000 0.5843);stop-opacity:1;"></stop>
+<stop offset="1" stop-color="#00E7FF" style="stop-color:#00E7FF;stop-color:color(display-p3 0.0000 0.9059 1.0000);stop-opacity:1;"></stop>
+</linearGradient>
+</defs>
+</svg>
+          <p style="margin: 12px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">(주)팀모노리스</p>
+          <p style="margin: 6px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">서울특별시 용산구 한강대로52길 17-3, 2F</p>
+          <p style="margin: 6px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">codle.io</p>
+          <p style="margin: 6px 0 0; font-size: 13px; font-weight: 400; line-height: 1.2; color: #4D4D4D">©TEAM MONOLITH Inc.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultAiSlide&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;student&quot;,&quot;options&quot;:[&quot;student&quot;,&quot;teacher&quot;],&quot;tsType&quot;:&quot;\&quot;student\&quot; | \&quot;teacher\&quot;&quot;,&quot;section&quot;:&quot;AI 기능&quot;},&quot;showFloatingNav&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;내비게이션&quot;}}">
+class Component extends DCLogic {
+  state = { slide: this.props.defaultAiSlide ?? "student", active: "top" };
+
+  // AIDEV-NOTE:
+  // 스크롤 스파이는 rAF 무한 루프 대신 passive 스크롤 리스너 + rAF 1프레임 스로틀로 처리한다.
+  // 마지막 항목("맨 아래로")만 문서 끝 도달 여부로 판정해야, 마지막 섹션이 뷰포트를
+  // 다 채우지 못할 때도 활성화된다.
+  SECTION_IDS = ["top", "lesson", "ai", "custom", "bottom"];
+
+  _spy = () => {
+    let active = "top";
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 80) {
+      active = "bottom";
+    } else {
+      for (const id of this.SECTION_IDS) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.4) active = id;
+      }
+    }
+    if (active !== this.state.active) this.setState({ active });
+  };
+
+  _onScroll = () => {
+    if (this._ticking) return;
+    this._ticking = true;
+    requestAnimationFrame(() => {
+      this._ticking = false;
+      this._spy();
+      this._sweepReveal();
+      this._syncVideos();
+    });
+  };
+
+  _navStyle(id) {
+    const on = this.state.active === id;
+    return {
+      fontSize: 14,
+      fontWeight: 500,
+      padding: "12px 18px",
+      borderRadius: 96,
+      lineHeight: 1,
+      transition: "background .25s, color .25s",
+      whiteSpace: "nowrap",
+      flexShrink: 0,
+      background: on ? "#3E88FF" : "transparent",
+      color: on ? "#fff" : "#4D4D4D",
+    };
+  }
+
+  _dotStyle(on) {
+    return {
+      width: on ? 22 : 8,
+      height: 8,
+      padding: 0,
+      border: "none",
+      borderRadius: 999,
+      cursor: "pointer",
+      transition: "width .25s, background .25s",
+      background: on ? "#3E88FF" : "#D9D9D9",
+    };
+  }
+
+  // AIDEV-NOTE:
+  // (1) 캐러셀 전환으로 <video>가 새로 마운트되면 자동재생이 걸리지 않는 브라우저가 있어
+  //     마운트/갱신 시 한 번씩 명시적으로 재생시킨다.
+  // (2) 12개를 전부 동시에 돌리면 모바일에서 디코딩 부담이 크다. 화면에서 한 뷰포트 이상
+  //     떨어진 영상은 정지시키고, 가까워지면 다시 재생한다.
+  VIDEO_MARGIN = 1.0;
+
+  _syncVideos() {
+    const vh = window.innerHeight;
+    const slack = vh * this.VIDEO_MARGIN;
+    document.querySelectorAll("video").forEach((v) => {
+      const r = v.getBoundingClientRect();
+      const near = r.bottom > -slack && r.top < vh + slack;
+      if (near) {
+        v.muted = true;
+        if (v.paused) v.play().catch(() => {});
+      } else if (!v.paused) {
+        v.pause();
+      }
+    });
+  }
+
+  _playVideos() { this._syncVideos(); }
+
+  // AIDEV-NOTE:
+  // 리빌은 이미 돌고 있는 스크롤 핸들러에 얹는다. IntersectionObserver를 쓰면 앵커 점프처럼
+  // 한 번에 여러 화면을 건너뛸 때 지나친 요소가 계속 opacity:0으로 남는다.
+  // 루트에 .js-reveal을 붙이는 순간부터 CSS가 opacity:0을 적용하므로,
+  // JS가 죽으면 본문은 처음부터 그냥 보인다.
+  _initReveal() {
+    const items = Array.from(document.querySelectorAll("[data-reveal]"));
+    if (!items.length) return;
+    (document.querySelector("x-dc") || document.body).classList.add("js-reveal");
+    const order = new Map();
+    items.forEach((el) => {
+      const p = el.parentElement;
+      const i = order.get(p) || 0;
+      order.set(p, i + 1);
+      el.style.transitionDelay = i * 70 + "ms";
+    });
+    this._pending = items;
+    this._sweepReveal();
+  }
+
+  _sweepReveal() {
+    if (!this._pending || !this._pending.length) return;
+    const vh = window.innerHeight;
+    this._pending = this._pending.filter((el) => {
+      if (el.getBoundingClientRect().top >= vh * 0.92) return true;
+      el.classList.add("is-in");
+      return false;
+    });
+  }
+
+  _toggleSlide() {
+    this.setState({ slide: this.state.slide === "student" ? "teacher" : "student" });
+  }
+
+  _onKeydown = (e) => {
+    const panel = document.querySelector(".ai-carousel");
+    if (!panel || !panel.contains(document.activeElement)) return;
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      this._toggleSlide();
+    }
+  };
+
+  // 모바일에서 좌우 스와이프로도 슬라이드를 넘긴다. 세로 스크롤과 충돌하지 않도록
+  // 가로 이동이 세로보다 확실히 클 때만 처리한다.
+  _onTouchStart = (e) => {
+    const t = e.changedTouches[0];
+    this._touch = { x: t.clientX, y: t.clientY };
+  };
+
+  _onTouchEnd = (e) => {
+    if (!this._touch) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - this._touch.x;
+    const dy = t.clientY - this._touch.y;
+    this._touch = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    this.setState({ slide: dx < 0 ? "teacher" : "student" });
+  };
+
+  componentDidMount() {
+    this._playVideos();
+    this._spy();
+    this._initReveal();
+    window.addEventListener("scroll", this._onScroll, { passive: true });
+    window.addEventListener("resize", this._onScroll, { passive: true });
+    window.addEventListener("keydown", this._onKeydown);
+    const panel = document.querySelector(".ai-panel");
+    if (panel) {
+      panel.addEventListener("touchstart", this._onTouchStart, { passive: true });
+      panel.addEventListener("touchend", this._onTouchEnd, { passive: true });
+      this._panel = panel;
+    }
+  }
+
+  componentDidUpdate() { this._playVideos(); }
+
+  componentWillUnmount() {
+    window.removeEventListener("scroll", this._onScroll);
+    window.removeEventListener("resize", this._onScroll);
+    window.removeEventListener("keydown", this._onKeydown);
+    if (this._panel) {
+      this._panel.removeEventListener("touchstart", this._onTouchStart);
+      this._panel.removeEventListener("touchend", this._onTouchEnd);
+    }
+  }
+
+  renderVals() {
+    const slide = this.state.slide;
+    // AIDEV-NOTE: 렌더 시점의 slide를 캡처하면 리렌더 전 연속 클릭이 같은 값을 읽는다.
+    // 호출 시점의 this.state를 읽어야 한다.
+    const toggle = () => this._toggleSlide();
+    return {
+      isStudent: slide === "student",
+      isStudentStr: slide === "student" ? "true" : "false",
+      isTeacherStr: slide === "teacher" ? "true" : "false",
+      isTeacher: slide === "teacher",
+      prevSlide: toggle,
+      nextSlide: toggle,
+      showStudent: () => this.setState({ slide: "student" }),
+      showTeacher: () => this.setState({ slide: "teacher" }),
+      dotStudentStyle: this._dotStyle(slide === "student"),
+      dotTeacherStyle: this._dotStyle(slide === "teacher"),
+      showNav: this.props.showFloatingNav ?? true,
+      navTopOn: this.state.active === "top" ? "1" : "0",
+      navLessonOn: this.state.active === "lesson" ? "1" : "0",
+      navAiOn: this.state.active === "ai" ? "1" : "0",
+      navCustomOn: this.state.active === "custom" ? "1" : "0",
+      navBottomOn: this.state.active === "bottom" ? "1" : "0",
+      navTopStyle: this._navStyle("top"),
+      navLessonStyle: this._navStyle("lesson"),
+      navAiStyle: this._navStyle("ai"),
+      navCustomStyle: this._navStyle("custom"),
+      navBottomStyle: this._navStyle("bottom"),
+    };
+  }
+}
+</script>
+</body>
+</html>
