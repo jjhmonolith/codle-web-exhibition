@@ -54,6 +54,20 @@ python3 build-variants.py
 | 푸터 | (주)금성출판사 / 마포구 / 080-969-1000 | (주)와이비엠 / 종로구 / 1544-0554 |
 | OG 카드 | `assets/og-kumsung-*.png` | `assets/og-ybm-*.png` |
 
+### 체험하기 버튼이 여는 데모 교실
+
+발행사·학교급마다 테넌트와 교실 id 가 다릅니다. 운영 중인 각 랜딩에서 확인한 값입니다.
+
+| 변형 | 데모 URL |
+| --- | --- |
+| 금성 고등 | `https://2v8p.aidt.me/demos?id=zvOMpET-bvA&user_type=teacher\|student` |
+| 금성 중등 | `https://2dnn.aidt.me/demos?id=O3X3ULB4Ljc&user_type=teacher\|student` |
+| YBM 고등 | `https://he75.aidt.me/demos?id=W9z60U3s9NI&user_type=teacher\|student` |
+| YBM 중등 | `https://dgfz.aidt.me/demos?id=cnDDMoVANU8&user_type=teacher\|student` |
+
+원본과 동일하게 행사용으로 붙는 `?authCode=` 를 `guest_id` 로 넘겨줍니다.
+예를 들어 `...?authCode=2024-12-03-exhibition-01` 로 접속하면 버튼 링크에 `&guest_id=2024-12-03-exhibition-01` 이 붙습니다.
+
 ### 4종이 공유하는 것
 
 과목 내용과 광고 카피가 같으므로 아래는 그대로 씁니다.
