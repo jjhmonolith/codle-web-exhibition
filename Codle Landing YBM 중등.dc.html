@@ -308,8 +308,8 @@
 
       <!-- CTA pair -->
       <div class="hero-ctas" style="margin-top: 26px; display: flex; align-items: center; gap: 24px">
-        <a href="{{ demoTeacherUrl }}" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">선생님 체험하기</a>
-        <a href="{{ demoStudentUrl }}" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">학생 체험하기</a>
+        <a href="https://dgfz.aidt.me/demos?id=cnDDMoVANU8&amp;user_type=teacher" data-demo="teacher" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">선생님 체험하기</a>
+        <a href="https://dgfz.aidt.me/demos?id=cnDDMoVANU8&amp;user_type=student" data-demo="student" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">학생 체험하기</a>
       </div>
     </div>
 
@@ -536,8 +536,8 @@
       <svg style="width:33px;height:43px;flex-shrink:0" aria-hidden="true"><use href="#m-bird"></use></svg>
     </div>
     <div style="margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 14px">
-      <a href="{{ demoTeacherUrl }}" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">선생님 체험하기</a>
-      <a href="{{ demoStudentUrl }}" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">학생 체험하기</a>
+      <a href="https://dgfz.aidt.me/demos?id=cnDDMoVANU8&amp;user_type=teacher" data-demo="teacher" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">선생님 체험하기</a>
+      <a href="https://dgfz.aidt.me/demos?id=cnDDMoVANU8&amp;user_type=student" data-demo="student" target="_blank" rel="noopener noreferrer" class="cta-btn" style="display: inline-flex; align-items: center; justify-content: center; padding: 13px 32px; border: 1px solid #9CC3FF; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 600; color: #2577FA">학생 체험하기</a>
     </div>
   </section>
 
@@ -621,25 +621,18 @@ class Component extends DCLogic {
   static LEVELS = { high: "고등", middle: "중등" };
 
   // AIDEV-NOTE:
-  // 웹전시 체험 버튼이 여는 데모 교실. 발행사·학교급마다 테넌트와 교실 id 가 다르다.
-  // 운영 중인 각 랜딩(codle.framer.website, kumsungmid.framer.website)에서 확인한 값이다.
-  static DEMOS = {
-    "kumsung-high": { host: "2v8p.aidt.me", id: "zvOMpET-bvA" },
-    "kumsung-middle": { host: "2dnn.aidt.me", id: "O3X3ULB4Ljc" },
-    "ybm-high": { host: "he75.aidt.me", id: "W9z60U3s9NI" },
-    "ybm-middle": { host: "dgfz.aidt.me", id: "cnDDMoVANU8" },
-  };
-
-  // 원본과 동일하게, 행사용으로 붙는 ?authCode= 를 guest_id 로 넘겨준다.
-  _demoUrl(userType) {
-    const key = String(this.props.variant ?? "kumsung-high");
-    const d = Component.DEMOS[key] || Component.DEMOS["kumsung-high"];
-    const q = new URLSearchParams({ id: d.id, user_type: userType });
-    const authCode = typeof location !== "undefined"
-      ? new URLSearchParams(location.search).get("authCode")
-      : null;
-    if (authCode) q.append("guest_id", authCode);
-    return `https://${d.host}/demos?${q.toString()}`;
+  // 체험 버튼의 href 는 빌드 시점에 변형별 실제 주소가 박힌다. JS 가 죽어도 링크는 살아 있다.
+  // 런타임이 하는 일은 행사용 ?authCode= 가 붙어 들어왔을 때 guest_id 를 얹어주는 것뿐이다.
+  _applyAuthCode() {
+    const authCode = new URLSearchParams(location.search).get("authCode");
+    if (!authCode) return;
+    document.querySelectorAll("a[data-demo]").forEach((a) => {
+      try {
+        const u = new URL(a.href);
+        u.searchParams.set("guest_id", authCode);
+        a.href = u.toString();
+      } catch (e) {}
+    });
   }
 
 
@@ -798,6 +791,7 @@ class Component extends DCLogic {
     this._playVideos();
     this._spy();
     this._initReveal();
+    this._applyAuthCode();
     window.addEventListener("scroll", this._onScroll, { passive: true });
     window.addEventListener("resize", this._onScroll, { passive: true });
     window.addEventListener("keydown", this._onKeydown);
@@ -835,8 +829,6 @@ class Component extends DCLogic {
       publisherTel: b.tel,
       publisherCopyright: b.copyright,
       levelName: level,
-      demoTeacherUrl: this._demoUrl("teacher"),
-      demoStudentUrl: this._demoUrl("student"),
       wmKumsung: b.wordmark === "#m-kumsung" ? {} : { display: "none" },
       wmYbm: b.wordmark === "#m-ybm" ? {} : { display: "none" },
       hasMascot: b.mascot,

@@ -9,6 +9,7 @@
 이 스크립트가 하는 일은 세 가지뿐이다.
   1. <helmet> 의 title / description / OG / 트위터 메타 교체
   2. `variant` prop 의 default 교체
+  3. 체험하기 버튼의 데모 교실 주소 교체 (JS 없이도 링크가 살아 있도록 정적으로 박는다)
 
 `Codle Landing.dc.html` 자체가 금성 고등 변형이자 편집 대상이라 다시 쓰지 않는다.
 
@@ -30,18 +31,21 @@ VARIANTS = {
         "publisher": "금성",
         "level": "중등",
         "og": "./assets/og-kumsung-middle.png",
+        "demo": ("2dnn.aidt.me", "O3X3ULB4Ljc"),
     },
     "ybm-high": {
         "file": "Codle Landing YBM 고등.dc.html",
         "publisher": "YBM",
         "level": "고등",
         "og": "./assets/og-ybm-high.png",
+        "demo": ("he75.aidt.me", "W9z60U3s9NI"),
     },
     "ybm-middle": {
         "file": "Codle Landing YBM 중등.dc.html",
         "publisher": "YBM",
         "level": "중등",
         "og": "./assets/og-ybm-middle.png",
+        "demo": ("dgfz.aidt.me", "cnDDMoVANU8"),
     },
 }
 
@@ -78,6 +82,20 @@ def patch_meta(src, cfg):
     return src
 
 
+SOURCE_DEMO = ("2v8p.aidt.me", "zvOMpET-bvA")  # 소스 = 금성 고등
+
+
+def patch_demo(src, cfg):
+    host, demo_id = cfg["demo"]
+    src, n = re.subn(re.escape(SOURCE_DEMO[0]), host, src)
+    if n != 4:
+        raise SystemExit(f"데모 호스트 치환 실패: {n}건 (4건 기대)")
+    src, n = re.subn(re.escape(SOURCE_DEMO[1]), demo_id, src)
+    if n != 4:
+        raise SystemExit(f"데모 id 치환 실패: {n}건 (4건 기대)")
+    return src
+
+
 def patch_variant_prop(src, key):
     match = re.search(r'data-props="([^"]*)"', src)
     if not match:
@@ -92,10 +110,10 @@ def main():
     src = SOURCE.read_text(encoding="utf-8")
 
     for key, cfg in VARIANTS.items():
-        out = patch_variant_prop(patch_meta(src, cfg), key)
+        out = patch_demo(patch_variant_prop(patch_meta(src, cfg), key), cfg)
         path = ROOT / cfg["file"]
         path.write_text(out, encoding="utf-8")
-        print(f"  {cfg['file']:<38} {title_for(cfg)}")
+        print(f"  {cfg['file']:<38} {title_for(cfg):<34} {cfg['demo'][0]}")
 
     print(f"\n{len(VARIANTS)}개 변형 생성 완료 (금성 고등은 소스 파일 자체)")
 

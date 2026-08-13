@@ -65,8 +65,9 @@ python3 build-variants.py
 | YBM 고등 | `https://he75.aidt.me/demos?id=W9z60U3s9NI&user_type=teacher\|student` |
 | YBM 중등 | `https://dgfz.aidt.me/demos?id=cnDDMoVANU8&user_type=teacher\|student` |
 
-원본과 동일하게 행사용으로 붙는 `?authCode=` 를 `guest_id` 로 넘겨줍니다.
-예를 들어 `...?authCode=2024-12-03-exhibition-01` 로 접속하면 버튼 링크에 `&guest_id=2024-12-03-exhibition-01` 이 붙습니다.
+주소는 `build-variants.py` 가 **정적으로 박아 넣습니다.** JS가 실패해도 링크는 살아 있습니다.
+런타임이 하는 일은 행사용으로 붙는 `?authCode=` 를 `guest_id` 로 얹어주는 것뿐입니다.
+`...?authCode=2024-12-03-exhibition-01` 로 접속하면 버튼 링크에 `&guest_id=2024-12-03-exhibition-01` 이 붙습니다.
 
 ### 4종이 공유하는 것
 
